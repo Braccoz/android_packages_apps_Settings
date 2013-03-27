@@ -84,14 +84,39 @@ public class BootReceiver extends BroadcastReceiver {
             if (availableFrequenciesLine != null){
                 frequencies = Arrays.asList(availableFrequenciesLine.split(" "));
             }
+            String tempcpustring;
             if (governor != null && governors != null && governors.contains(governor)) {
                 Utils.fileWriteOneLine(Processor.GOV_FILE, governor);
+                //this code to properly set the parameters to all cores on Qualcomm Snapdragon cpus
+                for (int i=1;i<4;i++) {
+                    tempcpustring = Processor.GOV_FILE.replace("/cpu0/","/cpu" + i + "/");
+                    if (Processor.isValidAndUniqueCpuFile(tempcpustring))
+                        Utils.fileWriteOneLine(tempcpustring, governor);
+                    else
+                        break;
+                }
             }
             if (maxFrequency != null && frequencies != null && frequencies.contains(maxFrequency)) {
                 Utils.fileWriteOneLine(Processor.FREQ_MAX_FILE, maxFrequency);
+                //this code to properly set the parameters to all cores on Qualcomm Snapdragon cpus
+                for (int i=1;i<4;i++) {
+                    tempcpustring = Processor.FREQ_MAX_FILE.replace("/cpu0/","/cpu" + i + "/");
+                    if (Processor.isValidAndUniqueCpuFile(tempcpustring))
+                        Utils.fileWriteOneLine(tempcpustring, maxFrequency);
+                    else
+                        break;
+                }
             }
             if (minFrequency != null && frequencies != null && frequencies.contains(minFrequency)) {
                 Utils.fileWriteOneLine(Processor.FREQ_MIN_FILE, minFrequency);
+                //this code to properly set the parameters to all cores on Qualcomm Snapdragon cpus
+                for (int i=1;i<4;i++) {
+                    tempcpustring = Processor.FREQ_MIN_FILE.replace("/cpu0/","/cpu" + i + "/");
+                    if (Processor.isValidAndUniqueCpuFile(tempcpustring))
+                        Utils.fileWriteOneLine(tempcpustring, minFrequency);
+                    else
+                        break;
+                }
             }
             Log.d(TAG, "CPU settings restored.");
         }

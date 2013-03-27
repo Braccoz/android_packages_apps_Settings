@@ -231,6 +231,7 @@ public class Processor extends SettingsPreferenceFragment implements
             }
 
             if (Utils.fileWriteOneLine(fname, (String) newValue)) {
+
                 if (preference == mGovernorPref) {
                     mGovernorPref.setSummary(String.format(mGovernorFormat, (String) newValue));
                 } else if (preference == mMinFrequencyPref) {
@@ -240,6 +241,16 @@ public class Processor extends SettingsPreferenceFragment implements
                     mMaxFrequencyPref.setSummary(String.format(mMaxFrequencyFormat,
                             toMHz((String) newValue)));
                 }
+                //this code to properly set the parameters to all cores on Qualcomm Snapdragon cpus
+                String tempcpustring;
+                for (int i=1;i<4;i++) {
+                    tempcpustring = fname.replace("/cpu0/","/cpu" + i + "/");
+                    if (isValidAndUniqueCpuFile(tempcpustring))
+                        Utils.fileWriteOneLine(tempcpustring, (String) newValue);
+                    else
+                        break;
+                }
+
                 return true;
             } else {
                 return false;
@@ -251,5 +262,18 @@ public class Processor extends SettingsPreferenceFragment implements
     private String toMHz(String mhzString) {
         return new StringBuilder().append(Integer.valueOf(mhzString) / 1000).append(" MHz")
                 .toString();
+    }
+
+    public static boolean isValidAndUniqueCpuFile(String fname) {
+        boolean retval = false;
+        try {
+            java.io.File cpufile = new java.io.File(fname);
+            if (cpufile.exists()) {
+                if (cpufile.getCanonicalFile().equals(cpufile.getAbsoluteFile()))
+                    retval = true;
+            }
+        } catch (java.io.IOException ioexc) {
+        }
+        return retval;
     }
 }
